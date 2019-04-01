@@ -1,0 +1,8 @@
+Pillow
+numpy
+opencv_python
+scikit_learn
+torch
+tqdm
+visdom
+yacs

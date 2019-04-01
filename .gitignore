@@ -1,0 +1,7 @@
+__pycache__
+.idea
+log
+logs
+__MACOSX
+*.pth
+*.csv
