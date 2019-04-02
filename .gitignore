@@ -7,3 +7,4 @@ models
 __MACOSX
 *.pth
 *.csv
+.DS_Store
