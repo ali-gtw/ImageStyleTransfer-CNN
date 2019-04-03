@@ -2,46 +2,68 @@ import os
 import argparse
 import torch
 from PIL import Image
-from torch.autograd import Variable
 
 from model import build_model
-from data import ImageTransform
 from model.engine import do_transfer_style
 from config import get_cfg_defaults
+from model.engine.hr_transfer_style import do_hr_transfer_style
+from model.meta_arch import GramMSELoss, StyleTransfer
 from util.logger import setup_logger
 from util.prepare_vgg import prepare_vgg_weights
 
-def transfer_style(cfg):
-    # build model
-    model = build_model(cfg)
+import torch.nn as nn
+
+
+def get_model(cfg):
+    # build vgg_model
+    vgg_model = build_model(cfg)
     device = torch.device(cfg.MODEL.DEVICE)
-    model.to(device)
+    vgg_model.to(device)
     # load model weights
     prepare_vgg_weights(cfg)
-    model.load_state_dict(torch.load(cfg.MODEL.WEIGHTS))
-    for param in model.parameters():
+    vgg_model.load_state_dict(torch.load(cfg.MODEL.WEIGHTS))
+    for param in vgg_model.parameters():
         param.requires_grad = False
 
-    # build image transformer
-    image_transformer = ImageTransform(cfg)
+    # define layers, loss functions
+    loss_layers = cfg.LOSS.STYLE_LAYERS + cfg.LOSS.CONTENT_LAYERS
+    loss_functions = [GramMSELoss()] * len(cfg.LOSS.STYLE_LAYERS) + \
+                     [nn.MSELoss()] * len(cfg.LOSS.CONTENT_LAYERS)
+    loss_functions = [loss_function.to(device) for loss_function in loss_functions]
 
-    # load images, ordered as [content_image, style_image]
-    image_paths = [cfg.DATA.CONTENT_IMG_PATH, cfg.DATA.STYLE_IMG_PATH]
-    images = [Image.open(image_path) for image_path in image_paths]
-    images_transformed = [image_transformer.preparation(image) for image in images]
-    images_transformed = [Variable(image.unsqueeze(0).to(device)) for image in images_transformed]
+    # loss weights settings
+    loss_weights = cfg.LOSS.STYLE_WEIGHTS + cfg.LOSS.CONTENT_WEIGHTS
 
-    content_image, style_image = images_transformed
+    model = StyleTransfer(vgg_model, loss_layers, loss_functions, loss_weights)
+    return model, device
+
+
+def transfer_style(cfg, high_resolution=False):
+    # build model
+    model, device = get_model(cfg)
+
+    # load images
+    content_image = Image.open(cfg.DATA.CONTENT_IMG_PATH)
+    style_image = Image.open(cfg.DATA.STYLE_IMG_PATH)
 
     # start transferring the style
-    do_transfer_style(
+    out_image = do_transfer_style(
         cfg,
         model,
-        image_transformer,
         content_image,
         style_image,
         device
     )
+
+    if high_resolution:
+        do_hr_transfer_style(
+            cfg,
+            model,
+            content_image,
+            style_image,
+            out_image,
+            device
+        )
 
 
 def main():

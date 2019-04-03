@@ -67,9 +67,14 @@ _C.LOSS = CN()
 _C.LOSS.CONTENT_LAYERS = ['relu4_2']
 _C.LOSS.STYLE_LAYERS = ['relu1_1', 'relu2_1', 'relu3_1', 'relu4_1', 'relu5_1']
 _C.LOSS.CONTENT_WEIGHTS = [1e0]
-_C.LOSS.STYLE_WEIGHTS = [1e3/n**2 for n in [64,128,256,512,512]]
+_C.LOSS.STYLE_WEIGHTS = [1e3/n**2 for n in [64, 128, 256, 512, 512]]
 _C.LOSS.MAX_ITER = 500
-_C.LOSS.LOG_ITER_SHOW = 50
+_C.LOSS.LOG_ITER_SHOW = 0.1
+
+# High Resolution Loss
+_C.HRLOSS = CN()
+_C.HRLOSS.MAX_ITER = 200
+
 
 # ---------------------------------------------------------------------------- #
 # Data
@@ -79,6 +84,9 @@ _C.DATA.STYLE_IMG_PATH = './images/styles/vangogh_starry_night.jpg'             
 _C.DATA.CONTENT_IMG_PATH = './images/contents/Tuebingen_Neckarfront.jpg'         # content image path
 _C.DATA.IMG_SIZE = 512
 _C.DATA.IMAGENET_MEAN = [0.40760392, 0.45795686, 0.48501961]
+# High Resolution Data
+_C.HRDATA = CN()
+_C.HRDATA.IMG_SIZE = 800
 
 # ---------------------------------------------------------------------------- #
 # Output Configs
@@ -86,6 +94,7 @@ _C.DATA.IMAGENET_MEAN = [0.40760392, 0.45795686, 0.48501961]
 _C.OUTPUT = CN()
 _C.OUTPUT.DIR = './output/'
 _C.OUTPUT.FILE_NAME = 'res.jpg'
+_C.OUTPUT.HR_FILE_NAME = 'hr_res.jpg'
 
 def get_cfg_defaults():
     """Get a yacs CfgNode object with default values for my_project."""
