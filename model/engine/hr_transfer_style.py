@@ -16,14 +16,14 @@ def do_hr_transfer_style(
         optimized_image,
         device,
 ):
-    logger.info("Start transferring.")
+    logger.info("Start transferring to high resolution.")
 
     image_transformer = ImageTransform(cfg.HRDATA.IMG_SIZE, cfg.DATA.IMAGENET_MEAN)
 
     # transform images
     content_image = transform_image(image_transformer, content_image, device)
     style_image = transform_image(image_transformer, style_image, device)
-    optimized_image = transform_image(optimized_image, style_image, device)
+    optimized_image = transform_image(image_transformer, optimized_image, device)
     optimized_image = Variable(optimized_image.type_as(content_image.data), requires_grad=True)
 
     optimized_image = optimize(model, content_image, style_image, optimized_image, cfg, cfg.HRLOSS.MAX_ITER)

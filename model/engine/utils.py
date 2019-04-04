@@ -1,9 +1,10 @@
 from torch import optim
 from torch.autograd import Variable
 
-from model.engine.transfer_style import logger
 from model.meta_arch import GramMatrix
+from util.logger import setup_logger
 
+logger = setup_logger('style-transfer', False)
 
 def transform_image(image_transformer, image, device):
     image_transformed = image_transformer.preparation(image)

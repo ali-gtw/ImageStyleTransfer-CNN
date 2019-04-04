@@ -92,7 +92,7 @@ def main():
     logger.info("Running with config:\n{}".format(cfg))
 
     # Transfer style to content
-    transfer_style(cfg)
+    transfer_style(cfg, high_resolution=True)
 
 
 if __name__ == "__main__":
